@@ -48,11 +48,10 @@ class Video(object):
                 raise StopIteration
 
         def props(self):
-            with self:
-                return {
-                    propId: self.cap.get(propId)
-                    for propId in self.propIds
-                }
+            return {
+                propId: self.cap.get(propId)
+                for propId in self.propIds
+            }
 
     def __init__(self, pathname):
         self.pathname = pathname
@@ -67,7 +66,8 @@ class Video(object):
         return self.CV2Video(self.pathname)
 
     def set_props(self):
-        self.props = self.open().props()
+        with self.open() as video:
+            self.props = video.props()
 
 if __name__ == '__main__':
     from pprint import pprint
