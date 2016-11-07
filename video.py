@@ -3,7 +3,7 @@ import cv2
 
 class Video(object):
     class CV2Video(object):
-        propIds = (
+        propIds = {
             cv2.CAP_PROP_POS_MSEC,
             cv2.CAP_PROP_POS_FRAMES,
             cv2.CAP_PROP_POS_AVI_RATIO,
@@ -24,7 +24,7 @@ class Video(object):
             cv2.CAP_PROP_RECTIFICATION,
             cv2.CAP_PROP_ISO_SPEED,
             cv2.CAP_PROP_BUFFERSIZE,
-        )
+        }
 
         def __init__(self, pathname):
             self.pathname = pathname
@@ -69,10 +69,14 @@ class Video(object):
         with self.open() as video:
             self.props = video.props()
 
+    def prop(self, propId):
+        return self.props[propId]
+
 if __name__ == '__main__':
     from pprint import pprint
     video = Video('beachVolleyball/beachVolleyball1.mov')
     pprint(video.props)
+    pprint(video.prop(cv2.CAP_PROP_FRAME_COUNT))
 
     import numpy as np
     pprint(np.array_equal(video, video))
