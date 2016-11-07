@@ -2,37 +2,29 @@
 import numpy as np
 import cv2
 from math import ceil, fabs
+import utils
 
 class Stitcher:
-	def isSand(self,r,g,b):
-	    h,s,v = self.rgb_to_hsv(r,g,b)
-	    return fabs(h-42) < 5 and fabs(s-18) < 20
-	def isLine(self,r,g,b):
-	    h,s,v = self.rgb_to_hsv(r,g,b)
-	    return fabs(h-355) < 5
-	def rgb_to_hsv(self, r, g, b):
-	    rr, gg, bb = r/255.0, g/255.0, b/255.0
-	    cMax = max(rr, gg, bb)
-	    cMin = min(rr, gg, bb)
-	    delta = cMax - cMin
-	    # Hue calculation
-	    if delta == 0:
-	        h = 0
-	    elif cMax == rr:
-	        h = (((gg - bb)/delta)%6)*60
-	    elif cMax == gg:
-	        h = (((bb - rr)/delta)+2)*60
-	    elif cMax == bb:
-	        h = (((rr - gg)/delta)+4)*60
-	    # Saturation calculation
-	    if cMax == 0:
-	        s = 0
-	    else:
-	        s = delta/cMax
-	    # Value calculation
-	    v = cMax
+	def stichSet(self, parentImage, images, ratio=0.75, reprojThresh=4.0):
+		(kps_parent, features_parent) = self.detectAndDescribe(parentImage)
+		(kps_sub, features_sub) = self.detectAndDescribe(images[0])
 
-	    return h, s, v
+		M = self.matchKeypoints(kps_sub, kps_parent,
+			features_sub, features_parent, ratio, reprojThresh)
+
+		# if the match is None, then there aren't enough matched
+		# keypoints to create a panorama
+		if M is None:
+			return None
+
+		# otherwise, apply a perspective warp to stitch the images
+		# together
+		(matches, H, status) = M
+		new_images = []
+		for image in images:
+			new_images.append(cv2.warpPerspective(image, H,
+				(image.shape[1], image.shape[0])))
+		return new_images
 
 	def stitch(self, images, ratio=0.75, reprojThresh=4.0,
 		showMatches=False):
@@ -83,7 +75,7 @@ class Stitcher:
 	      y,x = kp.pt
 	      b,g,r = image[int(ceil(x)),int(ceil(y))]
 
-	      if self.isSand(r,g,b) or self.isLine(r,g,b):
+	      if utils.isSand(r,g,b) or utils.isLine(r,g,b):
 	          court_kps.append(kp)
 
 	  # extract features from the image
