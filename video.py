@@ -44,8 +44,8 @@ class Video(object):
 
             if ret:
                 return frame
-            else:
-                raise StopIteration
+
+            raise StopIteration
 
         def props(self):
             return {
@@ -71,6 +71,7 @@ class Video(object):
 
     def prop(self, propId):
         return self.props[propId]
+
 
 if __name__ == '__main__':
     from pprint import pprint
