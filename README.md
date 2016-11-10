@@ -7,5 +7,6 @@ Move the volleyball videos to a folder called beachVolleyball (pretty much just 
 ## Step 2
 video transformation
 `python video_stabilizer.py -v beachVolleyball/beachVolleyball1.mov`
+
 create virtual court
 `python virtual_court.py -v beachVolleyball/beachVolleyballX.mov -c hardcoded_court_corners`
