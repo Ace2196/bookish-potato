@@ -21,8 +21,8 @@ if not os.path.exists(VIDEO_FRAME_DIR):
 stitcher = Stitcher()
 
 cap = cv2.VideoCapture(args["video"])
-fps = cap.get(cv2.cv.CV_CAP_PROP_FPS)
-frame_count = cap.get(cv2.cv.CV_CAP_PROP_FRAME_COUNT)
+fps = cap.get(cv2.CAP_PROP_FPS)
+frame_count = cap.get(cv2.CAP_PROP_FRAME_COUNT)
 print('To stitch frames to create video, call:')
 print('ffmpeg -framerate %d -i %s%%d.jpg -c:v libx264 -profile:v high -crf 19 -pix_fmt yuv420p warped%s.mp4'%(fps,VIDEO_FRAME_DIR,VIDEO_NAME))
 print('Performing initial sectional mapping')
