@@ -9,6 +9,10 @@ def isLine(r,g,b):
     h,s,v = rgb_to_hsv(r,g,b)
     return fabs(h-355) < 5
 
+def isInField(r,g,b):
+    h,s,v = rgb_to_hsv(r,g,b)
+    return fabs(h-42) < 10 and fabs(s-18) < 50
+
 def rgb_to_hsv(r, g, b):
     rr, gg, bb = r/255.0, g/255.0, b/255.0
     cMax = max(rr, gg, bb)
@@ -42,6 +46,10 @@ def removeStands(img):
     		if not isSand(r,g,b):
     			img[x][y] = [255,255,255]
     return img
+
+def blur_image(img):
+    img_blur = cv2.GaussianBlur(img,(31,31),0)
+    return img_blur
 
 def equalize_color(img):
     img_ycrcb = cv2.cvtColor(img, cv2.COLOR_BGR2YCR_CB)

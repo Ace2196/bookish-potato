@@ -6,85 +6,74 @@ import utils
 import imutils
 
 class Tracker:
+	roi = None
+	hsv_roi = None
+	mask = None
+	roi_hist = None
+	# Starting position for video 1
+	r, h, c, w = 175, 30, 488, 30 # green-back
+	# r, h, c, w = 80, 30, 200, 30 # green-front
+	# r, h, c, w = 55, 10, 160, 20 # white-right
+
+	# Setup the termination criteria, either 50 iteration or move by atleast 1 pt
+	term_crit = (cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 50, 1)
+	track_window = (c, r, w, h)
+	manual_tracking = False
+
 	def __init__(self):
 		# determine if we are using OpenCV v3.X
 		self.isv3 = imutils.is_cv3()
 
-	def track(self, images, ratio=0.75, reprojThresh=4.0,
-		showMatches=False):
-		# unpack the images, then detect keypoints and extract
-		# local invariant descriptors from them
-		(imageB, imageA) = images
-		(kpsA, featuresA) = self.detectAndDescribe(imageA)
-		(kpsB, featuresB) = self.detectAndDescribe(imageB)
+	def init(self, image):
+		print '====================== MeanShift: init ==================================='
+		# set up the ROI for tracking
+		cv2.imshow("img", image)
+		# image = utils.blur_image(image)
+		_, image = cv2.threshold(image, 200, 255, cv2.THRESH_BINARY)
+		roi = image[self.r: self.r + self.h, self.c: self.c + self.w]
+		cv2.imshow("roi",roi)
+		cv2.waitKey()
 
-		cv.imshow(removeStandts(img))
+		hsv_roi = cv2.cvtColor(roi, cv2.COLOR_BGR2HSV)
+		# Color of the object to recognize
+		mask = cv2.inRange(hsv_roi, np.array((60., 0., 0.)), np.array((180., 255., 255.)))
+		roi_hist = cv2.calcHist([hsv_roi], [0], mask, [180], [0, 180])
+		cv2.normalize(roi_hist, roi_hist, 0, 255, cv2.NORM_MINMAX)
 
+		self.roi = roi
+		self.hsv_roi = hsv_roi
+		self.mask = mask
+		self.roi_hist = roi_hist
 
-		# # match features between the two images
-		# M = self.matchKeypoints(kpsA, kpsB,
-		# 	featuresA, featuresB, ratio, reprojThresh)
+		self.draw_image(image)
 
-		# # if the match is None, then there aren't enough matched
-		# # keypoints to create a panorama
-		# if M is None:
-		# 	return None
+	def mean_shift(self, image):
+		img = image.copy()
+		# image = utils.blur_image(image)
+		# Remove noise and shadows
+		_, image = cv2.threshold(image, 200, 255, cv2.THRESH_BINARY)
 
-		# # otherwise, apply a perspective warp to stitch the images
-		# # together
-		# (matches, H, status) = M
-		# result = cv2.warpPerspective(imageA, H,
-		# 	(imageA.shape[1], imageA.shape[0]))
-		# # result[0:imageB.shape[0], 0:imageB.shape[1]] = imageB
+		hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+		dst = cv2.calcBackProject([hsv], [0], self.roi_hist, [0, 180], 1)
 
-		# # check to see if the keypoint matches should be visualized
-		# if showMatches:
-		# 	vis = self.drawMatches(imageA, imageB, kpsA, kpsB, matches,
-		# 		status)
+		# apply meanshift to get the new location
+		ret, self.track_window = cv2.meanShift(dst, self.track_window, self.term_crit)
 
-		# 	# return a tuple of the stitched image and the
-		# 	# visualization
-		# 	return (result, vis)
+		image = self.draw_image(img)
+		self.draw_dst(dst)
+		return image
 
-		# # return the stitched image
-		# return result
+	def draw_image(self, image):
+		x, y, w, h = self.track_window
+		image = cv2.rectangle(image, (x,y), (x+w,y+h), 255,2)
+		cv2.imshow("image", image)
+		cv2.waitKey()
+		return image
 
-	def detectAndDescribe(self, image):
-		# convert the image to grayscale
-		gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+	def draw_dst(self, image):
+		x, y, w, h = self.track_window
+		image = cv2.rectangle(image, (x,y), (x+w,y+h), 255,2)
+		cv2.imshow("dst", image)
+		cv2.waitKey()
+		return image
 
-		# check to see if we are using OpenCV 3.X
-		if self.isv3:
-			# detect and extract features from the image
-			descriptor = cv2.xfeatures2d.SIFT_create()
-			(kps, features) = descriptor.detectAndCompute(image, None)
-
-		# otherwise, we are using OpenCV 2.4.X
-		else:
-			# detect keypoints in the image
-			detector = cv2.FeatureDetector_create("SIFT")
-			kps = detector.detect(gray)
-
-			# extract features from the image
-			extractor = cv2.DescriptorExtractor_create("SIFT")
-			(kps, features) = extractor.compute(gray, kps)
-
-		# use only keppoints of sand and line
-		# print(kps, features)
-		court_kps = []
-		court_features = []
-		for index, kp in enumerate(kps):
-			y,x = kp.pt
-			b,g,r = image[int(ceil(x)),int(ceil(y))]
-
-			if utils.isSand(r,g,b) or utils.isLine(r,g,b):
-			  court_kps.append(kp)
-			  court_features.append(features[index])
-
-		# convert the keypoints from KeyPoint objects to NumPy
-		# arrays
-		court_kps = np.float32([kp.pt for kp in court_kps])
-		court_features = np.asarray(court_featuresz)
-
-		# return a tuple of keypoints and features
-		return (court_kps, court_features)
