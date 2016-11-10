@@ -1,15 +1,19 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import argparse
+from json import load as json_load
 import cv2
 
 # construct the argument parse and parse the arguments
 ap = argparse.ArgumentParser()
 ap.add_argument("-v", "--video", required=True,
-	help="path to the first image")
+	help="path to video")
+ap.add_argument("-c", "--corners", required=True,
+	help="path to file with hardcoded corner points")
 args = vars(ap.parse_args())
 
 VIDEO_NAME = args["video"].split('/')[-1].split('.')[0]
+IMAGE_POINTS_FILE = args["corners"]
 VIDEO_FRAME_DIR = "volley_vid_frames/%s/"%VIDEO_NAME
 
 class VirtualCourt(object):
@@ -62,12 +66,16 @@ class VirtualCourt(object):
 		self.homography = H
 
 if __name__ == '__main__':
+	with open(IMAGE_POINTS_FILE) as f:
+		hardcoded_points = json_load(f)
+
 	# scheme for points is top_left, top_right, bottom_right, bottom_left
-	image_points = np.asarray([[195.0,63.0],[440.0,140.0],[205.0,290.0],[48.0,89.0]])
-	test_points = np.asarray([[300,180]])
+	image_points = hardcoded_points[VIDEO_NAME]
+	print(image_points)
+	# test_points = np.asarray([[340,222]])
 
 	vc = VirtualCourt('assets/court_background.png')
 	vc.get_homography(*image_points)
 
-	X,Y = vc.getConvertedPoints(test_points)
+	X,Y = vc.getConvertedPoints(image_points)
 	vc.show_court(X,Y)
