@@ -5,6 +5,8 @@ from stitcher import Stitcher
 
 
 def homography_matrices(video):
+    stitcher = Stitcher()
+
     initialized = False
     for i, frame in enumerate(video):
         stdout.write('{}\r'.format(i))
