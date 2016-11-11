@@ -11,6 +11,9 @@ from sys import stdout
 from stitcher import Stitcher
 from video import Video
 
+video_pathname_pattern = 'beachVolleyball/*.mov'
+matrices_dirname = 'homography_matrices'
+
 
 def homography_matrices(video):
     stitcher = Stitcher()
@@ -65,10 +68,7 @@ def homography_matrices(video):
     return homography_matrices
 
 
-if __name__ == '__main__':
-    video_pathname_pattern = 'beachVolleyball/*.mov'
-    matrices_dirname = 'homography_matrices'
-
+def save():
     video_pathnames = iglob(video_pathname_pattern)
     mkdir(matrices_dirname)
 
@@ -80,4 +80,4 @@ if __name__ == '__main__':
 
         matrices = homography_matrices(video)
 
-        np.savetxt(matrices_pathname, matrices)
+        np.save(matrices_pathname, matrices)
