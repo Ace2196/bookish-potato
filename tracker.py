@@ -32,7 +32,15 @@ class Tracker:
 		self.isv3 = imutils.is_cv3()
 
 	def mouseEventCallback(self, event, x, y, flags, user_data):
-		print (x, y)
+		if event == cv2.EVENT_LBUTTONDOWN:
+			print(x, y)
+			# x = int(1.5 * x)
+			# y = int(1.5 * y)
+			self.set_track_window((x-15, y-15, self.w, self.h))
+			self.manual_tracking = True
+
+	def set_track_window(self, track_window):
+		self. track_window = track_window
 
 	def draw_contours(self, image):
 		img = image.copy()
@@ -53,15 +61,18 @@ class Tracker:
 
 		return img
 
-
 	def init(self, image):
-		print '====================== MeanShift: init ==================================='
-		# set up the ROI for tracking
-		cv2.imshow("img", image)
+		# preprocess image
+		cv2.imshow("init img", image)
+		cv2.setMouseCallback("init img", self.mouseEventCallback)
+		cv2.waitKey()
 		img = image.copy()
 		# image = utils.blur_image(image)
-		_, image = cv2.threshold(image, 150, 255, cv2.THRESH_BINARY)
+		_, image = cv2.threshold(image, 155, 255, cv2.THRESH_BINARY)
 		image = self.draw_contours(image)
+
+
+		# set up the ROI for tracking
 		roi = image[self.r: self.r + self.h, self.c: self.c + self.w]
 		cv2.imshow("roi",roi)
 		cv2.waitKey()
@@ -83,7 +94,7 @@ class Tracker:
 		img = image.copy()
 		# image = utils.blur_image(image)
 		# Remove noise and shadowsx
-		_, image = cv2.threshold(image, 150, 255, cv2.THRESH_BINARY)
+		_, image = cv2.threshold(image, 155, 255, cv2.THRESH_BINARY)
 		image = self.draw_contours(image)
 
 		hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
@@ -102,7 +113,6 @@ class Tracker:
 		y = y + self.delta_y
 		image = cv2.rectangle(image, (x, y), (x+self.box_x, y+self.box_y), 255,2)
 		cv2.imshow("image", image)
-		cv2.setMouseCallback("image", self.mouseEventCallback)
 		cv2.waitKey()
 		return image
 
