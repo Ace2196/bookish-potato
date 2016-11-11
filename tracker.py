@@ -11,13 +11,8 @@ class Tracker:
 	hsv_roi = None
 	mask = None
 	roi_hist = None
-	# Starting position for video 1
-	# r, h, c, w = 175, 30, 488, 30 # green-back
-	# r, h, c, w = 80, 30, 200, 30 # green-front
-	# r, h, c, w = 55, 30, 160, 30 # white-right
 
-	# Starting position for video 3
-	r, h, c, w = 150, 20, 450, 30 # green_back
+	r, h, c, w = 150, 20, 450, 30 
 	delta_x = 10
 	delta_y = 70 # green-back
 	# delta_y = 25
@@ -29,16 +24,10 @@ class Tracker:
 	track_window = (c, r, w, h)
 	manual_tracking = False
 
-	def __init__(self):
-		# determine if we are using OpenCV v3.X
-		self.isv3 = imutils.is_cv3()
-
 	def mouseEventCallback(self, event, x, y, flags, user_data):
 		# print(x, y)
 		if event == cv2.EVENT_LBUTTONDOWN:
-			print(x, y)
-			# x = int(1.5 * x)
-			# y = int(1.5 * y)
+			# print(x, y)
 			self.set_track_window((x-15, y-15, self.w, self.h))
 			self.set_roi()
 			self.manual_tracking = True
@@ -64,7 +53,6 @@ class Tracker:
 		# filter out contours of small size, which are likely to be noise
 		filtered_contours = []
 		for contour in contours:
-			# print(cv2.contourArea(contour))
 			# Remove contours on sand 
 			if cv2.contourArea(contour) > 50 and cv2.contourArea(contour) < 1000:
 				filtered_contours.append(contour)
@@ -92,7 +80,6 @@ class Tracker:
 		cv2.waitKey()
 
 		# preprocess image
-		# image = utils.blur_image(image)
 		_, image = cv2.threshold(image, 155, 255, cv2.THRESH_BINARY)
 		self.draw_contours(image)
 		cv2.destroyAllWindows()
@@ -106,7 +93,6 @@ class Tracker:
 	def mean_shift(self, original_image):
 		self.image = original_image.copy()
 		# preprocess image
-		# image = utils.blur_image(image)
 		_, image = cv2.threshold(original_image, 155, 255, cv2.THRESH_BINARY)
 		self.draw_contours(image)
 

@@ -28,12 +28,6 @@ cap = cv2.VideoCapture(args["video"])
 fps = cap.get(cv2.CAP_PROP_FPS)
 frame_count = cap.get(cv2.CAP_PROP_FRAME_COUNT)	
 
-SPLIT_SIZE = 50
-STEP_SIZE = 5
-
-
-# bar = progressbar.ProgressBar(maxval=frame_count, \
-#     widgets=[progressbar.Bar('=', '[', ']'), ' ', progressbar.Percentage()]).start()
 i = 0
 while i < frame_count:
 	_, frame_i = cap.read()
