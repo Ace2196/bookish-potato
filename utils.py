@@ -80,10 +80,6 @@ def removeStands(img):
     # res2 = cv2.GaussianBlur(res2,(131,131),0)
     return res2
 
-def blur_image(img):
-    img_blur = cv2.GaussianBlur(img,(31,31),0)
-    return img_blur
-
 def equalize_color(img):
     img_ycrcb = cv2.cvtColor(img, cv2.COLOR_BGR2YCR_CB)
 
