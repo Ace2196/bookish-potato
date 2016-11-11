@@ -1,7 +1,15 @@
+from glob import iglob
+from os import mkdir
+from os.path import (
+    basename,
+    join,
+)
+
 import numpy as np
 from sys import stdout
 
 from stitcher import Stitcher
+from video import Video
 
 
 def homography_matrices(video):
@@ -31,3 +39,21 @@ def homography_matrices(video):
         prev_frame = frame
 
     return homography_matrices
+
+
+if __name__ == '__main__':
+    video_pathname_pattern = 'beachVolleyball/*.mov'
+    matrices_dirname = 'homography_matrices'
+
+    video_pathnames = iglob(video_pathname_pattern)
+    mkdir(matrices_dirname)
+
+    for video_pathname in video_pathnames:
+        video = Video(video_pathname)
+
+        video_filename = basename(video_pathname)
+        matrices_pathname = join(matrices_dirname, video_filename, '.txt')
+
+        matrices = homography_matrices(video)
+
+        np.savetxt(matrices_pathname, matrices)
