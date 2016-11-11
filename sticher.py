@@ -3,8 +3,13 @@ import numpy as np
 import cv2
 from math import ceil, fabs
 import utils
+import imutils
 
 class Stitcher:
+	def __init__(self):
+		# determine if we are using OpenCV v3.X
+		self.isv3 = imutils.is_cv3()
+
 	def stichSet(self, parentImage, images, ratio=0.75, reprojThresh=4.0):
 		(kps_parent, features_parent) = self.detectAndDescribe(parentImage)
 		(kps_sub, features_sub) = self.detectAndDescribe(images[0])
@@ -63,30 +68,44 @@ class Stitcher:
 		return result
 
 	def detectAndDescribe(self, image):
-	  # convert the image to grayscale
-	  gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-	  # detect keypoints in the image
-	  detector = cv2.FeatureDetector_create("SURF")
-	  kps = detector.detect(gray)
-	  # mini = min(kps, key=attrgetter('size'))
-	  # print(mini.size)
-	  court_kps = []
-	  for kp in kps:
-	      y,x = kp.pt
-	      b,g,r = image[int(ceil(x)),int(ceil(y))]
+		# convert the image to grayscale
+		gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
-	      if utils.isSand(r,g,b) or utils.isLine(r,g,b):
-	          court_kps.append(kp)
+		# check to see if we are using OpenCV 3.X
+		if self.isv3:
+			# detect and extract features from the image
+			descriptor = cv2.xfeatures2d.SIFT_create()
+			(kps, features) = descriptor.detectAndCompute(image, None)
 
-	  # extract features from the image
-	  extractor = cv2.DescriptorExtractor_create("SURF")
-	  (kps, features) = extractor.compute(gray, court_kps)
-	  # convert the keypoints from KeyPoint objects to NumPy
-	  # arrays
-	  kps = np.float32([kp.pt for kp in kps])
+		# otherwise, we are using OpenCV 2.4.X
+		else:
+			# detect keypoints in the image
+			detector = cv2.FeatureDetector_create("SIFT")
+			kps = detector.detect(gray)
 
-	  # return a tuple of keypoints and features
-	  return (kps, features)
+			# extract features from the image
+			extractor = cv2.DescriptorExtractor_create("SIFT")
+			(kps, features) = extractor.compute(gray, kps)
+
+		# use only keppoints of sand and line
+		# print(kps, features)
+		court_kps = []
+		court_features = []
+		for index, kp in enumerate(kps):
+			y,x = kp.pt
+			b,g,r = image[int(ceil(x)),int(ceil(y))]
+
+			if utils.isSand(r,g,b) or utils.isLine(r,g,b):
+			  court_kps.append(kp)
+			  court_features.append(features[index])
+
+		# convert the keypoints from KeyPoint objects to NumPy
+		# arrays
+		court_kps = np.float32([kp.pt for kp in court_kps])
+		court_features = np.asarray(court_features)
+
+		# return a tuple of keypoints and features
+		return (court_kps, court_features)
 
 	def matchKeypoints(self, kpsA, kpsB, featuresA, featuresB,
 		ratio, reprojThresh):
