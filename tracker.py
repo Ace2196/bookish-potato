@@ -13,9 +13,6 @@ class Tracker:
 	roi_hist = None
 
 	r, h, c, w = 150, 20, 450, 30 
-	delta_x = 10
-	delta_y = 70 # green-back
-	# delta_y = 25
 	box_x = 10
 	box_y = 10
 
@@ -23,6 +20,10 @@ class Tracker:
 	term_crit = (cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 10, 1)
 	track_window = (c, r, w, h)
 	manual_tracking = False
+
+	def __init__(self, delta_x=10, delta_y=50):
+		self.delta_x = delta_x
+		self.delta_y = delta_y
 
 	def mouseEventCallback(self, event, x, y, flags, user_data):
 		# print(x, y)
@@ -107,14 +108,14 @@ class Tracker:
 		(res_image, x, y) = self.draw_image(self.image)
 
 		cv2.setMouseCallback("image", self.mouseEventCallback)
-		cv2.waitKey()
+		key = cv2.waitKey()
 
 		if self.manual_tracking == True:
 			self.setup_mean_shift(image)
 			self.manual_tracking = False
 			return self.mean_shift(original_image)
 
-		return (x, y)
+		return key, (x, y)
 
 	def draw_image(self, image):
 		res_image = image.copy()

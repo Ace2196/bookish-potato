@@ -35,8 +35,32 @@ while i < frame_count:
 	if i == 0:
 		tracker.init(frame_i)
 
-	(x, y) = tracker.mean_shift(frame_i)
+	key, (x, y) = tracker.mean_shift(frame_i)
+	print(key)
+
+	# Jump key -> j
+	# Use back the previous x, y
+	if key == 106:
+		(x, y) = (prev_x, prev_y)
+		print('jump')
+	# Quit key -> q
+	# DESTROY ALL WINDOWS
+	elif key == 113:
+		cv2.destroyAllWindows()
+		break
+	# + delta y key -> +
+	elif key == 61:
+		tracker.delta_y += 1
+		print(tracker.delta_y)
+		continue
+	# - delta y key -> -
+	elif key == 45:
+		tracker.delta_y -= 1
+		print(tracker.delta_y)
+		continue
+
 	f.write('%d,%d,%d\n'%(i,x,y))
 	i += 1
+	prev_x, prev_y = (x,y)
 	# cv2.imwrite("%s%d.jpg"%(VIDEO_FRAME_DIR,i), result)
 f.close()
