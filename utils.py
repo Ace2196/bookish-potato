@@ -37,15 +37,48 @@ def rgb_to_hsv(r, g, b):
 
     return h, s, v
 
+def imageColorClustering(img, k):
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+    Z = img.reshape((-1,3))
+    Z = np.float32(Z)
+
+    # define criteria, number of clusters(K) and apply kmeans()
+    criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 1.0)
+    K = k
+    ret,label,center=cv2.kmeans(Z,K,None,criteria,10,cv2.KMEANS_RANDOM_CENTERS)
+
+    # Now convert back into uint8, and make original image
+    center = np.uint8(center)
+    res = center[label.flatten()]
+    res2 = res.reshape((img.shape))
+    return cv2.cvtColor(res2, cv2.COLOR_HSV2BGR)
 
 def removeStands(img):
-    img_blur = cv2.GaussianBlur(img,(31,31),0)
-    for x in range(img.shape[0]):
-    	for y in range(img.shape[1]):
-    		b,g,r = img_blur[x][y]
-    		if not isSand(r,g,b):
-    			img[x][y] = [255,255,255]
-    return img
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+    Z = img.reshape((-1,3))
+    Z = np.float32(Z)
+
+    # define criteria, number of clusters(K) and apply kmeans()
+    criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 1.0)
+    K = 2
+    ret,label,center=cv2.kmeans(Z,K,None,criteria,10,cv2.KMEANS_RANDOM_CENTERS)
+
+    # Now convert back into uint8, and make original image
+    center = np.uint8(center)
+    res = center[label.flatten()]
+    res2 = res.reshape((img.shape))
+
+    res3 = cv2.cvtColor(res2, cv2.COLOR_HSV2BGR)
+    res3 = cv2.GaussianBlur(res3,(71,71),0)
+    res3 = cv2.cvtColor(res3, cv2.COLOR_BGR2HSV)
+
+    mask = cv2.inRange(res3, np.array([133,0,0]), np.array([153,255,255]))
+    mask = cv2.bitwise_not(mask)
+    result = cv2.bitwise_and(img,img, mask= mask)
+    #
+    res2 = cv2.cvtColor(result, cv2.COLOR_HSV2BGR)
+    # res2 = cv2.GaussianBlur(res2,(131,131),0)
+    return res2
 
 def blur_image(img):
     img_blur = cv2.GaussianBlur(img,(31,31),0)
