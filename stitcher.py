@@ -1,4 +1,3 @@
-from itertools import compress
 from math import ceil
 from operator import (
     attrgetter,
@@ -116,12 +115,3 @@ class Stitcher(object):
         )
 
         return warped_image
-
-if __name__ == '__main__':
-    src = cv2.imread('images/beachVolleyball1.mov/404.png')
-    dst = cv2.imread('images/beachVolleyball1.mov/000.png')
-
-    stitcher = Stitcher()
-    stitched_image, H = stitcher.stitch(src, dst)
-
-    cv2.imwrite('asdf.png', stitched_image)

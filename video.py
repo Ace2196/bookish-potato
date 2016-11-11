@@ -110,13 +110,3 @@ class Video(object):
         num_frames = int(self.prop(cv2.CAP_PROP_FRAME_COUNT))
 
         write_images(self.__iter__(), output_dirname, num_frames)
-
-
-if __name__ == '__main__':
-    from pprint import pprint
-    video = Video('beachVolleyball/beachVolleyball1.mov')
-    pprint(video.props)
-    pprint(video.prop(cv2.CAP_PROP_FRAME_COUNT))
-
-    import numpy as np
-    pprint(np.array_equal(video, video))
