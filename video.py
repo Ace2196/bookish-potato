@@ -32,11 +32,6 @@ def write_images(it, output_dirname, num_frames=None):
         cv2.imwrite(output_pathname, frame)
 
 
-def array_to_images(array, output_dirname):
-    num_frames = len(array)
-    write_images(array, output_dirname, num_frames)
-
-
 class Video(object):
     class CV2Video(object):
         propIds = {
