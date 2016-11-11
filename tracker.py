@@ -31,6 +31,9 @@ class Tracker:
 		# determine if we are using OpenCV v3.X
 		self.isv3 = imutils.is_cv3()
 
+	def mouseEventCallback(self, event, x, y, flags, user_data):
+		print (x, y)
+
 	def draw_contours(self, image):
 		img = image.copy()
 		gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
@@ -99,6 +102,7 @@ class Tracker:
 		y = y + self.delta_y
 		image = cv2.rectangle(image, (x, y), (x+self.box_x, y+self.box_y), 255,2)
 		cv2.imshow("image", image)
+		cv2.setMouseCallback("image", self.mouseEventCallback)
 		cv2.waitKey()
 		return image
 
