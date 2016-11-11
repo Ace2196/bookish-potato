@@ -46,6 +46,7 @@ while i < frame_count:
 	# if i%SPLIT_SIZE==0:
 	# 	frame_prev = np.copy(frame_i)
 	result = tracker.mean_shift(frame_prev)
+	cv2.imwrite("%s%d.jpg"%(VIDEO_FRAME_DIR,i), result)
 	frame_prev = frame_i
 	# cv2.imwrite("%s%d.jpg"%(VIDEO_FRAME_DIR,i), result)
 
