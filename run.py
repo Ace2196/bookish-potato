@@ -34,21 +34,15 @@ STEP_SIZE = 5
 
 # bar = progressbar.ProgressBar(maxval=frame_count, \
 #     widgets=[progressbar.Bar('=', '[', ']'), ' ', progressbar.Percentage()]).start()
-_, frame_prev = cap.read()
-tracker.init(frame_prev)
 i = 0
 while i < frame_count:
-	# bar.update(i)
 	_, frame_i = cap.read()
-	i += 1
-	print(i)
-	while i%STEP_SIZE != 0:
-		# bar.update(i)
-		_, frame_i = cap.read()
-		i += 1
-	if i%SPLIT_SIZE==0:
-		frame_prev = np.copy(frame_i)
+
+	if i == 0:
+		tracker.init(frame_i)
+
 	(x, y) = tracker.mean_shift(frame_i)
 	f.write('%d,%d,%d\n'%(i,x,y))
+	i += 1
 	# cv2.imwrite("%s%d.jpg"%(VIDEO_FRAME_DIR,i), result)
 f.close()
