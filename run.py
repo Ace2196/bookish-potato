@@ -16,6 +16,9 @@ args = vars(ap.parse_args())
 
 VIDEO_NAME = args["video"].split('/')[-1].split('.')[0]
 VIDEO_FRAME_DIR = "volley_vid_frames/tracker/%s/"%VIDEO_NAME
+
+f = open('%s_p1.txt'%VIDEO_NAME, 'w')
+
 if not os.path.exists(VIDEO_FRAME_DIR):
     os.makedirs(VIDEO_FRAME_DIR)
 
@@ -23,7 +26,7 @@ tracker = Tracker()
 
 cap = cv2.VideoCapture(args["video"])
 fps = cap.get(cv2.CAP_PROP_FPS)
-frame_count = cap.get(cv2.CAP_PROP_FRAME_COUNT)
+frame_count = cap.get(cv2.CAP_PROP_FRAME_COUNT)	
 
 SPLIT_SIZE = 50
 STEP_SIZE = 5
@@ -39,14 +42,13 @@ while i < frame_count:
 	_, frame_i = cap.read()
 	i += 1
 	print(i)
-	# while i%STEP_SIZE != 0:
-	# 	bar.update(i)
-	# 	_, frame_i = cap.read()
-	# 	i += 1
-	# if i%SPLIT_SIZE==0:
-	# 	frame_prev = np.copy(frame_i)
-	result = tracker.mean_shift(frame_prev)
-	cv2.imwrite("%s%d.jpg"%(VIDEO_FRAME_DIR,i), result)
-	frame_prev = frame_i
+	while i%STEP_SIZE != 0:
+		# bar.update(i)
+		_, frame_i = cap.read()
+		i += 1
+	if i%SPLIT_SIZE==0:
+		frame_prev = np.copy(frame_i)
+	(x, y) = tracker.mean_shift(frame_i)
+	f.write('%d,%d,%d\n'%(i,x,y))
 	# cv2.imwrite("%s%d.jpg"%(VIDEO_FRAME_DIR,i), result)
-
+f.close()
