@@ -1,3 +1,5 @@
+from os.path import join
+
 import cv2
 import numpy as np
 
@@ -75,6 +77,12 @@ class Video(object):
 
     def as_array(self):
         return np.array(list(self.__iter__()))
+
+    def write_images(self, output_dirname):
+        for i, frame in enumerate(self.__iter__()):
+            filename = '{}.png'.format(i)
+            output_pathname = join(output_dirname, filename)
+            cv2.imwrite(output_pathname, frame)
 
 
 if __name__ == '__main__':
