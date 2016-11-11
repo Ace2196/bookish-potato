@@ -1,4 +1,5 @@
 import cv2
+import numpy as np
 
 
 class Video(object):
@@ -71,6 +72,9 @@ class Video(object):
 
     def prop(self, propId):
         return self.props[propId]
+
+    def as_array(self):
+        return np.array(list(self.__iter__()))
 
 
 if __name__ == '__main__':
