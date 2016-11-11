@@ -118,7 +118,7 @@ class Tracker:
 		ret, self.track_window = cv2.meanShift(dst, self.track_window, self.term_crit)
 
 		self.draw_dst(dst)
-		res_image = self.draw_image(self.image)
+		(res_image, x, y) = self.draw_image(self.image)
 
 		cv2.setMouseCallback("image", self.mouseEventCallback)
 		cv2.waitKey()
@@ -128,7 +128,7 @@ class Tracker:
 			self.manual_tracking = False
 			return self.mean_shift(original_image)
 
-		return res_image
+		return (x, y)
 
 	def draw_image(self, image):
 		res_image = image.copy()
@@ -136,11 +136,10 @@ class Tracker:
 		x = x + self.delta_x
 		y = y + self.delta_y
 		cv2.rectangle(res_image, (x, y), (x+self.box_x, y+self.box_y), 255, thickness=cv2.FILLED)
-		# 255,  (0,0,255), 
 
 		# Display updated image to check correctness
 		cv2.imshow("image", res_image)
-		return res_image
+		return (res_image, x+self.box_x/2, y+self.box_y/2)
 
 	def draw_dst(self, image):
 		x, y, w, h = self.track_window
