@@ -76,7 +76,7 @@ if __name__ == '__main__':
         video = Video(video_pathname)
 
         video_filename = basename(video_pathname)
-        matrices_pathname = join(matrices_dirname, video_filename, '.txt')
+        matrices_pathname = join(matrices_dirname, video_filename + '.txt')
 
         matrices = homography_matrices(video)
 
