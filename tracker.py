@@ -11,12 +11,19 @@ class Tracker:
 	mask = None
 	roi_hist = None
 	# Starting position for video 1
-	# r, h, c, w = 175, 30, 488, 30 # green-back
+	r, h, c, w = 175, 30, 488, 30 # green-back
 	# r, h, c, w = 80, 30, 200, 30 # green-front
-	r, h, c, w = 55, 30, 160, 30 # white-right
+	# r, h, c, w = 55, 30, 160, 30 # white-right
+
+	# Starting position for video 3
+	# r, h, c, w = 150, 20, 450, 30 # green_back
+	delta_x = 10
+	delta_y = 70
+	box_x = 10
+	box_y = 10
 
 	# Setup the termination criteria, either 50 iteration or move by atleast 1 pt
-	term_crit = (cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 50, 1)
+	term_crit = (cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 10, 1)
 	track_window = (c, r, w, h)
 	manual_tracking = False
 
@@ -33,7 +40,7 @@ class Tracker:
 		for contour in contours:
 			# print(cv2.contourArea(contour))
 			# Remove contours on sand 
-			if cv2.contourArea(contour) > 60 and cv2.contourArea(contour) < 1000:
+			if cv2.contourArea(contour) > 50 and cv2.contourArea(contour) < 1000:
 				filtered_contours.append(contour)
 		cv2.drawContours(img, filtered_contours, -1, (0,255,0), 3)
 		cv2.drawContours(image, contours, -1, (0,255,0), 3)
@@ -72,7 +79,7 @@ class Tracker:
 	def mean_shift(self, image):
 		img = image.copy()
 		# image = utils.blur_image(image)
-		# Remove noise and shadows
+		# Remove noise and shadowsx
 		_, image = cv2.threshold(image, 150, 255, cv2.THRESH_BINARY)
 		image = self.draw_contours(image)
 
@@ -88,7 +95,9 @@ class Tracker:
 
 	def draw_image(self, image):
 		x, y, w, h = self.track_window
-		image = cv2.rectangle(image, (x,y), (x+w,y+h), 255,2)
+		x = x + self.delta_x
+		y = y + self.delta_y
+		image = cv2.rectangle(image, (x, y), (x+self.box_x, y+self.box_y), 255,2)
 		cv2.imshow("image", image)
 		cv2.waitKey()
 		return image
