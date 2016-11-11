@@ -27,9 +27,8 @@ def write_images(it, output_dirname, num_frames=None):
     for i, frame in enumerate(it):
         filename = '{}.png'.format(str(i).zfill(length))
 
-        print(type(output_dirname), type(filename))
-
         output_pathname = join(output_dirname, filename)
+
         cv2.imwrite(output_pathname, frame)
 
 
