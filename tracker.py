@@ -6,19 +6,21 @@ import utils
 import imutils
 
 class Tracker:
+	image = None
 	roi = None
 	hsv_roi = None
 	mask = None
 	roi_hist = None
 	# Starting position for video 1
-	r, h, c, w = 175, 30, 488, 30 # green-back
+	# r, h, c, w = 175, 30, 488, 30 # green-back
 	# r, h, c, w = 80, 30, 200, 30 # green-front
 	# r, h, c, w = 55, 30, 160, 30 # white-right
 
 	# Starting position for video 3
-	# r, h, c, w = 150, 20, 450, 30 # green_back
+	r, h, c, w = 150, 20, 450, 30 # green_back
 	delta_x = 10
-	delta_y = 70
+	delta_y = 70 # green-back
+	# delta_y = 25
 	box_x = 10
 	box_y = 10
 
@@ -32,94 +34,117 @@ class Tracker:
 		self.isv3 = imutils.is_cv3()
 
 	def mouseEventCallback(self, event, x, y, flags, user_data):
+		# print(x, y)
 		if event == cv2.EVENT_LBUTTONDOWN:
 			print(x, y)
 			# x = int(1.5 * x)
 			# y = int(1.5 * y)
 			self.set_track_window((x-15, y-15, self.w, self.h))
+			self.set_roi()
 			self.manual_tracking = True
 
 	def set_track_window(self, track_window):
-		self. track_window = track_window
+		self.track_window = track_window
+
+	def set_roi(self, image=None):
+		# set up the ROI for tracking
+		if image == None:
+			image = self.image
+		c, r, w, h = self.track_window
+		self.roi = image[r: r+h, c: c+w]
+		cv2.imshow("roi", self.roi)
+
+		return self.roi
 
 	def draw_contours(self, image):
-		img = image.copy()
-		gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
+		gray = cv2.cvtColor(image,cv2.COLOR_BGR2GRAY)
 		ret,thresh = cv2.threshold(gray, 127, 255, 0)
 		_, contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+
+		# filter out contours of small size, which are likely to be noise
 		filtered_contours = []
 		for contour in contours:
 			# print(cv2.contourArea(contour))
 			# Remove contours on sand 
 			if cv2.contourArea(contour) > 50 and cv2.contourArea(contour) < 1000:
 				filtered_contours.append(contour)
-		cv2.drawContours(img, filtered_contours, -1, (0,255,0), 3)
-		cv2.drawContours(image, contours, -1, (0,255,0), 3)
-		cv2.imshow("img1", img)
-		cv2.imshow("imgage", image)
-		cv2.waitKey()
+		cv2.drawContours(image, filtered_contours, -1, (0,255,0), 3)
+		cv2.imshow("contours", image)
 
-		return img
+		return image
 
-	def init(self, image):
-		# preprocess image
-		cv2.imshow("init img", image)
-		cv2.setMouseCallback("init img", self.mouseEventCallback)
-		cv2.waitKey()
-		img = image.copy()
-		# image = utils.blur_image(image)
-		_, image = cv2.threshold(image, 155, 255, cv2.THRESH_BINARY)
-		image = self.draw_contours(image)
-
-
-		# set up the ROI for tracking
-		roi = image[self.r: self.r + self.h, self.c: self.c + self.w]
-		cv2.imshow("roi",roi)
-		cv2.waitKey()
-
+	def setup_mean_shift(self, image):
+		roi = self.set_roi(image)
 		hsv_roi = cv2.cvtColor(roi, cv2.COLOR_BGR2HSV)
-		# Color of the object to recognize
 		mask = cv2.inRange(hsv_roi, np.array((60., 0., 0.)), np.array((180., 255., 255.)))
 		roi_hist = cv2.calcHist([hsv_roi], [0], mask, [180], [0, 180])
 		cv2.normalize(roi_hist, roi_hist, 0, 255, cv2.NORM_MINMAX)
 
-		self.roi = roi
 		self.hsv_roi = hsv_roi
 		self.mask = mask
 		self.roi_hist = roi_hist
 
-		self.draw_image(img)
+	def init(self, image):
+		self.image = image.copy()
+		# set up player to be tracked
+		cv2.imshow("init image", image)
+		cv2.setMouseCallback("init image", self.mouseEventCallback)
+		cv2.waitKey()
 
-	def mean_shift(self, image):
-		img = image.copy()
+		# preprocess image
 		# image = utils.blur_image(image)
-		# Remove noise and shadowsx
 		_, image = cv2.threshold(image, 155, 255, cv2.THRESH_BINARY)
-		image = self.draw_contours(image)
+		self.draw_contours(image)
+		cv2.destroyAllWindows()
 
+		if self.manual_tracking == True:
+			self.setup_mean_shift(image)
+			self.manual_tracking = False
+
+		self.draw_image(self.image)
+
+	def mean_shift(self, original_image):
+		self.image = original_image.copy()
+		# preprocess image
+		# image = utils.blur_image(image)
+		_, image = cv2.threshold(original_image, 155, 255, cv2.THRESH_BINARY)
+		self.draw_contours(image)
+
+		# calculate back project
 		hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
 		dst = cv2.calcBackProject([hsv], [0], self.roi_hist, [0, 180], 1)
 
 		# apply meanshift to get the new location
 		ret, self.track_window = cv2.meanShift(dst, self.track_window, self.term_crit)
 
-		image = self.draw_image(img)
 		self.draw_dst(dst)
-		return image
+		res_image = self.draw_image(self.image)
+
+		cv2.setMouseCallback("image", self.mouseEventCallback)
+		cv2.waitKey()
+
+		if self.manual_tracking == True:
+			self.setup_mean_shift(image)
+			self.manual_tracking = False
+			return self.mean_shift(original_image)
+
+		return res_image
 
 	def draw_image(self, image):
+		res_image = image.copy()
 		x, y, w, h = self.track_window
 		x = x + self.delta_x
 		y = y + self.delta_y
-		image = cv2.rectangle(image, (x, y), (x+self.box_x, y+self.box_y), 255,2)
-		cv2.imshow("image", image)
-		cv2.waitKey()
-		return image
+		cv2.rectangle(res_image, (x, y), (x+self.box_x, y+self.box_y), 255, thickness=cv2.FILLED)
+		# 255,  (0,0,255), 
+
+		# Display updated image to check correctness
+		cv2.imshow("image", res_image)
+		return res_image
 
 	def draw_dst(self, image):
 		x, y, w, h = self.track_window
 		image = cv2.rectangle(image, (x,y), (x+w,y+h), 255,2)
 		cv2.imshow("dst", image)
-		cv2.waitKey()
 		return image
 
