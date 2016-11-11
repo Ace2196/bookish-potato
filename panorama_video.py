@@ -1,7 +1,9 @@
 import numpy as np
 import cv2
 import imutils
+import argparse
 import video
+import sys
 
 from math import ceil, fabs
 
@@ -12,7 +14,6 @@ class PanoramaVideoBuilder:
     
     def build(self, cap, count=10, ratio=0.75, reprojThresh=4.0):
         frameCount = int(cap.get(7))
-        output = []
         
         if count:
             frameIterativeLength = int(frameCount/count)
@@ -53,9 +54,7 @@ class PanoramaVideoBuilder:
                 result = self.stitchImages(nxt, result, ratio, reprojThresh, rightToLeft=False)
                 
             result = self.removeBlankSpace(result)
-            output.append(result)
-
-        return output
+            yield result
 
     def overlay(self, top, bottom, H, w, h):
         corners = np.array([[0, 0], [w, 0], [0, h], [w, h]], dtype='float32')
@@ -218,12 +217,15 @@ class PanoramaVideoBuilder:
                 ptB = np.array((int(kpsB[trainIdx][0]), int(kpsB[trainIdx][1])))
                 diff = ptA - ptB
                 movement += diff
-                
-        return movement / sum(status)[0]
+        
+        return movement / len(status)
 
 
 if __name__ == '__main__':
-    cap = cv2.VideoCapture('./beachVolleyball/beachVolleyball6.mov')
+    ap = argparse.ArgumentParser()
+    ap.add_argument("-v", "--video", required=True,
+        help="video number")
+    args = vars(ap.parse_args())
+    cap = cv2.VideoCapture('./beachVolleyball/beachVolleyball%s.mov' % args['video'])
     panoramaBuilder = PanoramaVideoBuilder()
-    output = panoramaBuilder.build(cap)
-    video.write_images(output, 'output/')
+    video.write_images(panoramaBuilder.build(cap, count=None), 'output/')
