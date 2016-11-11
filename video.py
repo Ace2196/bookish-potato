@@ -1,7 +1,41 @@
+from glob import iglob
 from os.path import join
 
 import cv2
 import numpy as np
+
+
+def from_images(pathname_pattern):
+    pathnames = sorted(iglob(pathname_pattern))
+
+    frames = np.array(list(map(cv2.imread, pathnames)))
+
+    return frames
+
+
+def write_images(it, output_dirname, num_frames=None):
+    if not num_frames:
+        try:
+            num_frames = len(it)
+        except TypeError:
+            it = list(it)
+            num_frames = len(it)
+
+    last_index = num_frames - 1
+    length = len(str(last_index))
+
+    for i, frame in enumerate(it):
+        filename = '{}.png'.format(str(i).zfill(length))
+
+        print(type(output_dirname), type(filename))
+
+        output_pathname = join(output_dirname, filename)
+        cv2.imwrite(output_pathname, frame)
+
+
+def array_to_images(array, output_dirname):
+    num_frames = len(array)
+    write_images(array, output_dirname, num_frames)
 
 
 class Video(object):
@@ -79,10 +113,9 @@ class Video(object):
         return np.array(list(self.__iter__()))
 
     def write_images(self, output_dirname):
-        for i, frame in enumerate(self.__iter__()):
-            filename = '{}.png'.format(i)
-            output_pathname = join(output_dirname, filename)
-            cv2.imwrite(output_pathname, frame)
+        num_frames = int(self.prop(cv2.CAP_PROP_FRAME_COUNT))
+
+        write_images(self.__iter__(), output_dirname, num_frames)
 
 
 if __name__ == '__main__':
