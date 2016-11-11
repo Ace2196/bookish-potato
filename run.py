@@ -4,7 +4,7 @@ import argparse
 import imutils
 import cv2
 import os
-import progressbar
+# import progressbar
 import utils
 import numpy as np
 
