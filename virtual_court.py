@@ -29,13 +29,14 @@ class VirtualCourt(object):
 	    # standard competitive volleyball court
 	    # For more info : http://www.livestrong.com/article/362595-dimensions-of-a-beach-volleyball-court/
 	    self.real_corners = np.asarray([
-	        [50.0,40.0],
-			[260.0,40.0],
-	        [470.0,40.0],
-	        [470.0,280.0],
-	        [260.0,280.0],
-	        [50.0,280.0]
+	        [50.0,35.],
+			[260.0,35.],
+	        [470.0,35.],
+	        [470.0,245.],
+	        [260.0,245.],
+	        [50.0,245.]
 	    ])
+	    self.scale = (470 - 50)/16
 	    self.court_size = (520,320)
 	    self.court_image = cv2.imread(court_background_image)
 
