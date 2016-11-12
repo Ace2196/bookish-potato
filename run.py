@@ -29,7 +29,7 @@ fps = cap.get(cv2.CAP_PROP_FPS)
 frame_count = cap.get(cv2.CAP_PROP_FRAME_COUNT)	
 
 i = 0
-start_frame = 34
+start_frame = 49
 while i < frame_count:
 	_, frame_i = cap.read()
 
