@@ -16,7 +16,7 @@ def homography_matrices(video):
             prev_frame = frame
             continue
 
-        if i%50 == 0:
+        if i%20 == 0:
             homography_matrices = np.append(
                 homography_matrices,
                 [np.identity(3)],
@@ -44,7 +44,7 @@ def homography_matrices(video):
             prev_frame = frame
             continue
 
-        if i%50 == 0:
+        if i%20 == 0:
             H = Stitcher().find_homography(frame, prev_frame)
             reduced_H = reduced_H @ H
             prev_frame = frame

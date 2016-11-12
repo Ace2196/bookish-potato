@@ -83,9 +83,9 @@ class VirtualCourt(object):
 
 if __name__ == '__main__':
 	print('To stitch processed frames to create video, call:')
-	print('ffmpeg -framerate %d -i %s%%d.jpg -c:v libx264 -profile:v high -crf 19 -pix_fmt yuv420p %sprocessed_%s.mp4'%(12,VIDEO_FRAME_DIR,VIDEO_FRAME_DIR,VIDEO_NAME))
+	print('ffmpeg -framerate %d -i %s%%d.jpg -c:v libx264 -profile:v high -crf 19 -pix_fmt yuv420p %sprocessed_%s.mp4'%(60,VIDEO_FRAME_DIR,VIDEO_FRAME_DIR,VIDEO_NAME))
 	print('To stitch plot frames to create video, call:')
-	print('ffmpeg -framerate %d -i %splot%%d.jpg -c:v libx264 -profile:v high -crf 19 -pix_fmt yuv420p %splot_%s.mp4'%(12,VIDEO_FRAME_DIR,VIDEO_FRAME_DIR,VIDEO_NAME))
+	print('ffmpeg -framerate %d -i %splot%%d.png -c:v libx264 -profile:v high -crf 19 -pix_fmt yuv420p %splot_%s.mp4'%(60,VIDEO_FRAME_DIR,VIDEO_FRAME_DIR,VIDEO_NAME))
 
 	video = Video(args["video"])
 	images = video.as_array()
@@ -113,11 +113,15 @@ if __name__ == '__main__':
 	player_positions = [[],[],[],[]]
 	for pl_num in range(0,4):
 		with open('%s_p%d.txt'%(VIDEO_NAME,pl_num+1)) as pos:
+			isFirstLine = True
 			for line in pos:
 				i, x, y = map(
 	                lambda c: int(c),
 	                line.split(',')
 	            )
+				if isFirstLine and i>0:
+					player_positions[pl_num].append([0,0]*i)
+				isFirstLine = False
 				point = np.asarray([x,y,1])
 				warped_point = np.dot(hs[i], point)
 				x = int(warped_point[0]/warped_point[2])
@@ -126,14 +130,14 @@ if __name__ == '__main__':
 	for pl_num in range(0,4):
 		pl_points = player_positions[pl_num]
 		pl_x = [point[0] for point in pl_points]
-		pl_x = sigproc.savgol_filter(pl_x,5,2)
+		pl_x = sigproc.savgol_filter(pl_x,15,2)
 		pl_y = [point[1] for point in pl_points]
-		pl_y = sigproc.savgol_filter(pl_y,5,2)
+		pl_y = sigproc.savgol_filter(pl_y,15,2)
 		player_positions[pl_num] = [[int(pl_x[i]),int(pl_y[i])] for i in range(len(pl_x))]
 
 	point = []
-	for i in range(235):
-		frame_num = (i+1)*5
+	for i in range(len(player_positions[0])):
+		frame_num = i
 		stdout.write('{}\r'.format(frame_num))
 		stdout.flush()
 		pl1_x,pl1_y = player_positions[0][i]
