@@ -22,21 +22,45 @@ def homography_matrices(video):
 
         if initialized is False:
             initialized = True
-            reduced_H = np.identity(3)
-            homography_matrices = np.array([reduced_H])
+            homography_matrices = np.array([np.identity(3)])
             prev_frame = frame
             continue
 
-        H = stitcher.find_homography(frame, prev_frame)
+        if i%20 == 0:
+            homography_matrices = np.append(
+                homography_matrices,
+                [np.identity(3)],
+                axis=0
+            )
+            prev_frame = frame
+            continue
 
-        reduced_H = reduced_H @ H
+        H = Stitcher().find_homography(frame, prev_frame)
+
         homography_matrices = np.append(
             homography_matrices,
-            [reduced_H],
+            [H],
             axis=0
         )
 
-        prev_frame = frame
+    initialized = False
+    for i, frame in enumerate(video):
+        stdout.write('{}\r'.format(i))
+        stdout.flush()
+
+        if initialized is False:
+            initialized = True
+            reduced_H = np.identity(3)
+            prev_frame = frame
+            continue
+
+        if i%20 == 0:
+            H = Stitcher().find_homography(frame, prev_frame)
+            reduced_H = reduced_H @ H
+            prev_frame = frame
+
+        # H = reduced_H @ H
+        homography_matrices[i] = reduced_H @ homography_matrices[i]
 
     return homography_matrices
 

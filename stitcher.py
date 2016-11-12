@@ -98,6 +98,9 @@ class Stitcher(object):
         pts_src = np.float64([kp_src[i] for i in indices_src])
         pts_dst = np.float64([kp_dst[i] for i in indices_dst])
 
+        if len(pts_src) < 4 or len(pts_dst) < 4:
+            return np.identity(3)
+
         H, mask = cv2.findHomography(
             pts_src,
             pts_dst,
