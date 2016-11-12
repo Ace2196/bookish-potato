@@ -107,6 +107,4 @@ class Video(object):
         return np.array(list(self.__iter__()))
 
     def write_images(self, output_dirname):
-        num_frames = int(self.prop(cv2.CAP_PROP_FRAME_COUNT))
-
-        write_images(self.__iter__(), output_dirname, num_frames)
+        write_images(self.__iter__(), output_dirname)
