@@ -40,6 +40,9 @@ class VirtualCourt(object):
 	    self.court_size = (520,320)
 	    self.court_image = cv2.imread(court_background_image)
 
+	def true_distance(self, pt1, pt2):
+		return np.linalg.norm((pt1 - pt2) * self.scale)
+
 	def show_court(self,x,y):
 		plt.scatter([x[0]],[y[0]],color='r')
 		plt.scatter([x[1]],[y[1]],color='g')
