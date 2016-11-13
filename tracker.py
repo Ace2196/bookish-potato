@@ -16,7 +16,7 @@ class Tracker:
 	box_x = 10
 	box_y = 10
 
-	# Setup the termination criteria, either 50 iteration or move by atleast 1 pt
+	# Setup the termination criteria, either 10 iteration or move by atleast 1 pt
 	term_crit = (cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 10, 1)
 	track_window = (c, r, w, h)
 	manual_tracking = False
@@ -26,9 +26,7 @@ class Tracker:
 		self.delta_y = delta_y
 
 	def mouseEventCallback(self, event, x, y, flags, user_data):
-		# print(x, y)
 		if event == cv2.EVENT_LBUTTONDOWN:
-			# print(x, y)
 			self.set_track_window((x-15, y-15, self.w, self.h))
 			self.set_roi()
 			self.manual_tracking = True
