@@ -2,10 +2,11 @@ from itertools import (
     chain,
     repeat,
 )
+from json import load
 from operator import sub
 
 
-def jumps(frame_indices, num_frames):
+def count_jumps(frame_indices, num_frames):
     jumps = list(
         chain.from_iterable(
             map(
@@ -36,3 +37,14 @@ def jumps(frame_indices, num_frames):
             )
         )
     )
+
+
+def get_jumps(filename, num_frames):
+    with open(filename) as f:
+        jumps = load(f)
+
+    return list(map(lambda i: count_jumps(i, num_frames), jumps))
+
+
+if __name__ == '__main__':
+    print(list(map(len, get_jumps('jumps/2.json', 649))))
